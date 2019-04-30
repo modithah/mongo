@@ -1164,16 +1164,19 @@ __evict_lru_pages(WT_SESSION_IMPL *session, bool is_server)
 
 	WT_TRACK_OP_INIT(session);
 	conn = S2C(session);
-
+    WT_CACHE *cache;
+	cache = conn->cache;
 	/*
 	 * Reconcile and discard some pages: EBUSY is returned if a page fails
 	 * eviction because it's unavailable, continue in that case.
 	 */
+	__wt_spin_lock(session, &cache->moditha_walk_lock);
 	while (F_ISSET(conn, WT_CONN_EVICTION_RUN) && ret == 0 ){
 		if ((ret = __evict_page(session, is_server)) == EBUSY)
 			ret = 0;
 	
 	}
+	__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	/* If a worker thread found the queue empty, pause. */
 	if (ret == WT_NOTFOUND && !is_server &&
 	    F_ISSET(conn, WT_CONN_EVICTION_RUN))
@@ -1725,7 +1728,7 @@ __evict_walk_tree(WT_SESSION_IMPL *session,
 	 * Note that some care is taken in the calculation to avoid overflow.
 	 */
 	start = queue->evict_queue + *slotp;
-	remaining_slots = max_entries ;
+	remaining_slots = max_entries ; //100- 40 60
 	//printf("%s progress %u target %u \n",btree->dhandle->name,btree->evict_walk_progress,btree->evict_walk_target);
 	if (btree->evict_walk_progress >= btree->evict_walk_target) {
 		btree->evict_walk_target =
@@ -1739,7 +1742,7 @@ __evict_walk_tree(WT_SESSION_IMPL *session,
 			btree->evict_walk_progress = 0;
 	}
 	target_pages = WT_MIN(btree->evict_walk_target / QUEUE_FILLS_PER_PASS,
-	    btree->evict_walk_target - btree->evict_walk_progress);
+	    btree->evict_walk_target - btree->evict_walk_progress); //target_pages - 96
 
 printf("%s evict walk %u target %u remaining %u slots %u\n",btree->dhandle->name,btree->evict_walk_target,target_pages,remaining_slots,*slotp);
 	if (target_pages > remaining_slots)
@@ -2347,11 +2350,11 @@ __evict_page(WT_SESSION_IMPL *session, bool is_server)
 	 */
 	__wt_cache_read_gen_bump(session, ref->page);
 
-__wt_spin_lock(session, &cache->moditha_walk_lock);
+
 	
 	WT_WITH_BTREE(session, btree,
 	     ret = __wt_evict(session, ref, false, previous_state));
-__wt_spin_unlock(session, &cache->moditha_walk_lock);
+//__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	(void)__wt_atomic_subv32(&btree->evict_busy, 1);
 
 	if (app_timer) {
@@ -2444,6 +2447,7 @@ __wt_cache_eviction_worker(
 			break;
 
 		/* Evict a page. */
+		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		switch (ret = __evict_page(session, false)) {
 		case 0:
 			if (busy)
@@ -2460,6 +2464,7 @@ __wt_cache_eviction_worker(
 		default:
 			goto err;
 		}
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
 		/* Stop if we've exceeded the time out. */
 		if (timer && cache->cache_max_wait_us != 0) {
 			time_stop = __wt_clock(session);
@@ -2471,6 +2476,7 @@ __wt_cache_eviction_worker(
 	}
 
 err:	if (timer) {
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
 		time_stop = __wt_clock(session);
 		elapsed = WT_CLOCKDIFF_US(time_stop, time_start);
 		WT_STAT_CONN_INCRV(session, application_cache_time, elapsed);
