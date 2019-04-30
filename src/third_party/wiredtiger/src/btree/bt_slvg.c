@@ -170,7 +170,8 @@ __wt_bt_salvage(WT_SESSION_IMPL *session, WT_CKPT *ckptbase, const char *cfg[])
 	WT_DECL_RET;
 	WT_STUFF *ss, stuff;
 	uint32_t i, leaf_cnt;
-
+ WT_CONNECTION_IMPL *conn;
+	conn = S2C(session);
 	WT_UNUSED(cfg);
 
 	btree = S2BT(session);
@@ -330,7 +331,9 @@ __wt_bt_salvage(WT_SESSION_IMPL *session, WT_CKPT *ckptbase, const char *cfg[])
 	 */
 	if (ss->root_ref.page != NULL) {
 		btree->ckpt = ckptbase;
+		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		ret = __wt_evict(session, &ss->root_ref, true, WT_REF_MEM);
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
 		ss->root_ref.page = NULL;
 		btree->ckpt = NULL;
 	}
@@ -1258,7 +1261,8 @@ __slvg_col_build_leaf(WT_SESSION_IMPL *session, WT_TRACK *trk, WT_REF *ref)
 	WT_SALVAGE_COOKIE *cookie, _cookie;
 	uint64_t recno, skip, take;
 	uint32_t save_entries;
-
+    WT_CONNECTION_IMPL *conn;
+	conn = S2C(session);
 	cookie = &_cookie;
 	WT_CLEAR(*cookie);
 
@@ -1327,8 +1331,11 @@ __slvg_col_build_leaf(WT_SESSION_IMPL *session, WT_TRACK *trk, WT_REF *ref)
 	page->entries = save_entries;
 
 	ret = __wt_page_release(session, ref, 0);
-	if (ret == 0)
+	if (ret == 0){
+		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		ret = __wt_evict(session, ref, true, WT_REF_MEM);
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
+	}
 
 	if (0) {
 err:		WT_TRET(__wt_page_release(session, ref, 0));
@@ -1939,7 +1946,8 @@ __slvg_row_build_leaf(
 	WT_SALVAGE_COOKIE *cookie, _cookie;
 	uint32_t i, skip_start, skip_stop;
 	int cmp;
-
+    WT_CONNECTION_IMPL *conn;
+	conn = S2C(session);
 	btree = S2BT(session);
 	page = NULL;
 
@@ -2062,8 +2070,11 @@ __slvg_row_build_leaf(
 	 * parent's reference.
 	 */
 	ret = __wt_page_release(session, ref, 0);
-	if (ret == 0)
+	if (ret == 0){
+		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		ret = __wt_evict(session, ref, true, WT_REF_MEM);
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
+		}
 
 	if (0) {
 err:		WT_TRET(__wt_page_release(session, ref, 0));
