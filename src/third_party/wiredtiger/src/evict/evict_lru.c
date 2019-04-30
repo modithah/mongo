@@ -1171,6 +1171,7 @@ __evict_lru_pages(WT_SESSION_IMPL *session, bool is_server)
 	 * eviction because it's unavailable, continue in that case.
 	 */
 	__wt_spin_lock(session, &cache->moditha_walk_lock);
+	print("ecit pages  \n");
 	while (F_ISSET(conn, WT_CONN_EVICTION_RUN) && ret == 0 ){
 		if ((ret = __evict_page(session, is_server)) == EBUSY)
 			ret = 0;
@@ -2448,6 +2449,7 @@ __wt_cache_eviction_worker(
 
 		/* Evict a page. */
 		__wt_spin_lock(session, &cache->moditha_walk_lock);
+		print("swithc \n");
 		switch (ret = __evict_page(session, false)) {
 		case 0:
 			if (busy)
