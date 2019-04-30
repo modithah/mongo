@@ -170,8 +170,10 @@ __wt_bt_salvage(WT_SESSION_IMPL *session, WT_CKPT *ckptbase, const char *cfg[])
 	WT_DECL_RET;
 	WT_STUFF *ss, stuff;
 	uint32_t i, leaf_cnt;
- WT_CONNECTION_IMPL *conn;
+    WT_CONNECTION_IMPL *conn;
 	conn = S2C(session);
+	WT_CACHE *cache;
+	cache = conn->cache;
 	WT_UNUSED(cfg);
 
 	btree = S2BT(session);
@@ -1263,6 +1265,8 @@ __slvg_col_build_leaf(WT_SESSION_IMPL *session, WT_TRACK *trk, WT_REF *ref)
 	uint32_t save_entries;
     WT_CONNECTION_IMPL *conn;
 	conn = S2C(session);
+	WT_CACHE *cache;
+	cache = conn->cache;
 	cookie = &_cookie;
 	WT_CLEAR(*cookie);
 
@@ -1948,6 +1952,8 @@ __slvg_row_build_leaf(
 	int cmp;
     WT_CONNECTION_IMPL *conn;
 	conn = S2C(session);
+	WT_CACHE *cache;
+	cache = conn->cache;
 	btree = S2BT(session);
 	page = NULL;
 

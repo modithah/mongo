@@ -68,7 +68,10 @@ __wt_delete_page(WT_SESSION_IMPL *session, WT_REF *ref, bool *skipp)
 	WT_ADDR *ref_addr;
 	WT_DECL_RET;
 	uint32_t previous_state;
-
+    WT_CONNECTION_IMPL *conn;
+	conn = S2C(session);
+	WT_CACHE *cache;
+	cache = conn->cache;
 	*skipp = false;
 
 	/* If we have a clean page in memory, attempt to evict it. */
