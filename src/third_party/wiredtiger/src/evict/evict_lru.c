@@ -1166,17 +1166,19 @@ __evict_lru_pages(WT_SESSION_IMPL *session, bool is_server)
 	conn = S2C(session);
     WT_CACHE *cache;
 	cache = conn->cache;
+	int evicted=0;
 	/*
 	 * Reconcile and discard some pages: EBUSY is returned if a page fails
 	 * eviction because it's unavailable, continue in that case.
 	 */
 	__wt_spin_lock(session, &cache->moditha_walk_lock);
-	printf("ecit pages  \n");
+	printf("evit pages  \n");
 	while (F_ISSET(conn, WT_CONN_EVICTION_RUN) && ret == 0 ){
 		if ((ret = __evict_page(session, is_server)) == EBUSY)
 			ret = 0;
-	
+	evicted++;
 	}
+	print("evicted %u\n",evicted);
 	__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	/* If a worker thread found the queue empty, pause. */
 	if (ret == WT_NOTFOUND && !is_server &&
@@ -2448,6 +2450,7 @@ __wt_cache_eviction_worker(
 			break;
 
 		/* Evict a page. */
+		print("before switch \n")
 		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		printf("swithc \n");
 		switch (ret = __evict_page(session, false)) {
