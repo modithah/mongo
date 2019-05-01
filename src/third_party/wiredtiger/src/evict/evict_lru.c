@@ -1178,7 +1178,7 @@ __evict_lru_pages(WT_SESSION_IMPL *session, bool is_server)
 			ret = 0;
 	evicted++;
 	}
-	print("evicted %u\n",evicted);
+	printf("evicted %u\n",evicted);
 	__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	/* If a worker thread found the queue empty, pause. */
 	if (ret == WT_NOTFOUND && !is_server &&
@@ -2450,7 +2450,7 @@ __wt_cache_eviction_worker(
 			break;
 
 		/* Evict a page. */
-		print("before switch \n")
+		printf("before switch \n");
 		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		printf("swithc \n");
 		switch (ret = __evict_page(session, false)) {
