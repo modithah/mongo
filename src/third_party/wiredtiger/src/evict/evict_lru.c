@@ -1258,11 +1258,12 @@ __evict_lru_walk(WT_SESSION_IMPL *session)
 	/*
 	 * We have locked the queue: in the (unusual) case where we are filling
 	 * the current queue, mark it empty so that subsequent requests switch
-	 * to the other queue.
+	 * to 9the other queue.
 	 */
 	if (queue == cache->evict_current_queue)
 		queue->evict_current = NULL;
 
+	printf("sorting \n");
 	entries = queue->evict_entries;
 	__wt_qsort(queue->evict_queue,
 	    entries, sizeof(WT_EVICT_ENTRY), __evict_lru_cmp);
