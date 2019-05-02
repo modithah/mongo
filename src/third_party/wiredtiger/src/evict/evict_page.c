@@ -252,6 +252,9 @@ done:	/* Leave any local eviction generation. */
 	if (local_gen)
 		__wt_session_gen_leave(session, WT_GEN_EVICT);
 
+	if(ret != 0){
+		printf("ret %u\n",ret);
+	}
 	return (ret);
 }
 
