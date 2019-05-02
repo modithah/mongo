@@ -1263,7 +1263,7 @@ __evict_lru_walk(WT_SESSION_IMPL *session)
 	if (queue == cache->evict_current_queue)
 		queue->evict_current = NULL;
 	
-	printf("sorting candidates %u entries %u\n ", queue->evict_queue->evict_candidates,queue->evict_queue->evict_entries );
+	printf("sorting candidates %u entries %u\n ", queue->evict_candidates,queue->evict_entries );
 	entries = queue->evict_entries;
 	__wt_qsort(queue->evict_queue,
 	    entries, sizeof(WT_EVICT_ENTRY), __evict_lru_cmp);
