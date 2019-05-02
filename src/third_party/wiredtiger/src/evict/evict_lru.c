@@ -1384,7 +1384,7 @@ __evict_walk(WT_SESSION_IMPL *session, WT_EVICT_QUEUE *queue)
 	 * per walk.
 	 */
 	start_slot = slot = queue->evict_entries;
-	max_entries = WT_MIN(slot + WT_EVICT_WALK_INCR, cache->evict_slots);
+	max_entries = WT_MIN(slot + WT_EVICT_WALK_INCR + WT_EVICT_WALK_BASE, cache->evict_slots);
 
 	/*
 	 * Another pathological case: if there are only a tiny number of
