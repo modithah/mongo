@@ -1173,7 +1173,7 @@ __evict_lru_pages(WT_SESSION_IMPL *session, bool is_server)
 	 */
 	__wt_spin_lock(session, &cache->moditha_walk_lock);
 	printf("evit pages  \n");
-	while (F_ISSET(conn, WT_CONN_EVICTION_RUN) && ret == 0 ){
+   	while (F_ISSET(conn, WT_CONN_EVICTION_RUN) && ret == 0 ){
 		if ((ret = __evict_page(session, is_server)) == EBUSY)
 			ret = 0;
 	evicted++;
@@ -1262,8 +1262,8 @@ __evict_lru_walk(WT_SESSION_IMPL *session)
 	 */
 	if (queue == cache->evict_current_queue)
 		queue->evict_current = NULL;
-
-	printf("sorting \n");
+	
+	printf("sorting candidates %u entries %u\n ", queue->evict_queue->evict_candidates,queue->evict_queue->evict_entries );
 	entries = queue->evict_entries;
 	__wt_qsort(queue->evict_queue,
 	    entries, sizeof(WT_EVICT_ENTRY), __evict_lru_cmp);
