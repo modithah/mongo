@@ -53,6 +53,7 @@ __evict_exclusive(WT_SESSION_IMPL *session, WT_REF *ref)
 int
 __wt_page_release_evict(WT_SESSION_IMPL *session, WT_REF *ref)
 {
+	printf("release evict\n");
 	WT_BTREE *btree;
 	WT_DECL_RET;
 	WT_PAGE *page;
@@ -64,7 +65,8 @@ __wt_page_release_evict(WT_SESSION_IMPL *session, WT_REF *ref)
 	locked = false;
 	page = ref->page;
 	time_start = __wt_clock(session);
-
+WT_CACHE *cache;
+	cache = S2C(session)->cache;
 	/*
 	 * This function always releases the hazard pointer - ensure that's
 	 * done regardless of whether we can get exclusive access.  Take some
@@ -89,7 +91,9 @@ __wt_page_release_evict(WT_SESSION_IMPL *session, WT_REF *ref)
 	 * Track how long the call to evict took. If eviction is successful then
 	 * we have one of two pairs of stats to increment.
 	 */
+	__wt_spin_lock(session, &cache->moditha_walk_lock);
 	ret = __wt_evict(session, ref, false, previous_state);
+	__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	time_stop = __wt_clock(session);
 	if (ret == 0) {
 		if (too_big) {
@@ -126,6 +130,7 @@ int
 __wt_evict(WT_SESSION_IMPL *session,
     WT_REF *ref, bool closing, uint32_t previous_state)
 {
+	
 	WT_CONNECTION_IMPL *conn;
 	WT_DECL_RET;
 	WT_PAGE *page;
@@ -134,7 +139,13 @@ __wt_evict(WT_SESSION_IMPL *session,
 	conn = S2C(session);
 	page = ref->page;
 	local_gen = false;
+WT_BTREE *btree;
+btree = S2BT(session);
+	//printf(" evicting %s   ->\n", btree->dhandle->name);
+//	printf("%"PRIu64"\n", e->score);
 
+
+ 
 	__wt_verbose(session, WT_VERB_EVICT,
 	    "page %p (%s)", (void *)page, __wt_page_type_string(page->type));
 

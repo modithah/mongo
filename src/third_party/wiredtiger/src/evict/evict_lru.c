@@ -1442,7 +1442,7 @@ __evict_walk(WT_SESSION_IMPL *session, WT_EVICT_QUEUE *queue)
 	    __wt_cache_pages_inuse(cache) : cache->pages_dirty_leaf);
 	max_entries = WT_MIN(max_entries, 1 + total_candidates / 2);
 	pages_seen_interim = pages_seen_total = 0;
-
+__wt_spin_lock(session, &cache->moditha_walk_lock);
 retry:	loop_count = 0;
 	while (slot < max_entries) {
 		loop_count++;
@@ -1620,7 +1620,7 @@ err:	if (dhandle_locked)
 	 */
 	if (queue->evict_entries == slot && cache->pass_intr == 0)
 		ret = WT_NOTFOUND;
-
+__wt_spin_unlock(session, &cache->moditha_walk_lock);
 	queue->evict_entries = slot;
 	WT_TRACK_OP_END(session);
 	return (ret);

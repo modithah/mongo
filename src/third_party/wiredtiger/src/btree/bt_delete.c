@@ -68,7 +68,10 @@ __wt_delete_page(WT_SESSION_IMPL *session, WT_REF *ref, bool *skipp)
 	WT_ADDR *ref_addr;
 	WT_DECL_RET;
 	uint32_t previous_state;
-
+    WT_CONNECTION_IMPL *conn;
+	conn = S2C(session);
+	WT_CACHE *cache;
+	cache = conn->cache;
 	*skipp = false;
 
 	/* If we have a clean page in memory, attempt to evict it. */
@@ -81,7 +84,9 @@ __wt_delete_page(WT_SESSION_IMPL *session, WT_REF *ref, bool *skipp)
 		}
 
 		(void)__wt_atomic_addv32(&S2BT(session)->evict_busy, 1);
+		__wt_spin_lock(session, &cache->moditha_walk_lock);
 		ret = __wt_evict(session, ref, false, previous_state);
+		__wt_spin_unlock(session, &cache->moditha_walk_lock);
 		(void)__wt_atomic_subv32(&S2BT(session)->evict_busy, 1);
 		WT_RET_BUSY_OK(ret);
 		ret = 0;

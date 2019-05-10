@@ -107,7 +107,7 @@ struct __wt_cache {
 	 */
 	WT_CONDVAR *evict_cond;		/* Eviction server condition */
 	WT_SPINLOCK evict_walk_lock;	/* Eviction walk location */
-
+    WT_SPINLOCK moditha_walk_lock;
 	/*
 	 * Eviction threshold percentages use double type to allow for
 	 * specifying percentages less than one.
@@ -142,6 +142,7 @@ struct __wt_cache {
 	 */
 	volatile uint32_t pass_intr;	/* Interrupt eviction pass. */
 
+    bool walking;
 	/*
 	 * LRU eviction list information.
 	 */
