@@ -17,8 +17,8 @@
  * number of pages from each file's in-memory tree for each page we evict.
  */
 #define	WT_EVICT_MAX_TREES	1000	/* Maximum walk points */
-#define	WT_EVICT_WALK_BASE	4000	/* Pages tracked across file visits */
-#define	WT_EVICT_WALK_INCR	100	/* Pages added each walk */
+#define	WT_EVICT_WALK_BASE	400	/* Pages tracked across file visits */
+#define	WT_EVICT_WALK_INCR	10	/* Pages added each walk */
 
 /*
  * WT_EVICT_ENTRY --
